@@ -13,7 +13,7 @@ One file. Zero dependencies. Zero respect.
 - The **GARDEN NOISE** meter decays like Trae's defense, so keep mashing
 - Max the meter for the **BING BONG SINGULARITY**: air horn, bow cameo, and a hail of middle fingers
 - Milestones at 10 / 25 / 50 / 100 / 200 / 365 / 500 presses — Spike Lee, Billy Joel, and the Westminster Dog Show all make appearances
-- Toggle **PA ANNOUNCER** to make your computer literally say it
+- **VOICE CHANT** (on by default) literally says it, one syllable per beat, locked to the stomps — FUCK / WEM / BEE
 - Lifetime fucks chanted are persisted in localStorage, as the founders intended
 
 ## 👽 WEMBY MODE — Finals Edition

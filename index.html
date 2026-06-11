@@ -292,7 +292,7 @@
     <div class="btnrow">
       <button class="pill on" id="sndBtn">SOUND: ON</button>
       <button id="chantBtn">🗣 CHANT</button>
-      <button class="pill" id="paBtn">PA ANNOUNCER: OFF</button>
+      <button class="pill on" id="paBtn">VOICE CHANT: ON</button>
       <button class="pill" id="modeBtn">VS: TRAE</button>
     </div>
     <div class="hint" id="hint">MASH THE BUTTON · SPACEBAR WORKS · THE METER DECAYS LIKE TRAE'S DEFENSE</div>
@@ -326,7 +326,7 @@ let WORDS = [...document.querySelectorAll('.word')];
 
 // ---------- state ----------
 let hype = 0;
-let soundOn = true, paOn = false;
+let soundOn = true, paOn = true, speechWarmed = false;
 let ctx = null, master = null, crowdGain = null, crowdFilter = null, noiseBuf = null;
 let chantOn = false, schedTimer = null, nextBar = 0, barIndex = 0;
 let sessionPresses = 0, maxArmed = true, cameoBusy = false;
@@ -354,7 +354,7 @@ const MODES = {
     words: ['FUCK', 'TRAE', 'YOUNG'],
     beatMap: [0, 1, 2],
     panelLbl: 'TRAE — FUCKS GIVEN',
-    chant: 'Fuck! Trae! Young!',
+    syllables: ['FUCK', 'TRAE', 'YOUNG'],
     cameoEmoji: '🤫',
     cameoCap: 'HE&rsquo;S BOWING — BOO LOUDER',
     rain: ['🖕', '🖕', '🖕', '🖕', '🏀', '🧡', '💙'],
@@ -377,7 +377,7 @@ const MODES = {
     words: ['FUCK', 'WEMBY'],
     beatMap: [0, 1, 1],
     panelLbl: 'WEMBY — FUCKS GIVEN',
-    chant: 'Fuck! Wemby!',
+    syllables: ['FUCK', 'WEM', 'BEE'],
     cameoEmoji: '👽',
     cameoCap: 'THE ALIEN IS SIGNALING THE MOTHERSHIP — BOO LOUDER',
     rain: ['🖕', '🖕', '🖕', '🖕', '🏀', '🛸', '🧡', '💙'],
@@ -458,6 +458,14 @@ function unlockMobileAudio() {
 
 function ensureAudio() {
   unlockMobileAudio();
+  // iOS only allows speechSynthesis after a speak() from a user gesture —
+  // warm it up with a silent utterance so the scheduled chant can talk
+  if (!speechWarmed && 'speechSynthesis' in window) {
+    speechWarmed = true;
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    speechSynthesis.speak(u);
+  }
   if (!ctx) {
     const AC = window.AudioContext || window.webkitAudioContext;
     ctx = new AC();
@@ -594,14 +602,13 @@ function scheduleBar(t) {
   for (let k = 0; k < 3; k++) {
     const st = t + k * BEAT;
     syllable(st, k);
-    visualAt(st, () => lightWord(k));
+    visualAt(st, () => { lightWord(k); speakSyl(k); });
   }
   visualAt(t + 3 * BEAT, () => { if (chantOn) lightWord(-1); });
   barIndex++;
   lifetime++;
   $('chantCount').textContent = lifetime.toLocaleString();
   try { localStorage.setItem('fty_chants', String(lifetime)); } catch (e) {}
-  if ((barIndex & 1) === 0) paMaybe(t);
 }
 
 function visualAt(t, fn) {
@@ -619,14 +626,15 @@ function lightWord(beat) {
   setTimeout(() => $('jumbo').classList.remove('flash'), 90);
 }
 
-function paMaybe(t) {
-  if (!paOn || !('speechSynthesis' in window)) return;
-  if (speechSynthesis.speaking || speechSynthesis.pending) return;
-  visualAt(t, () => {
-    const u = new SpeechSynthesisUtterance(MODE.chant);
-    u.rate = 1.1; u.pitch = 0.5; u.volume = 0.9;
-    speechSynthesis.speak(u);
-  });
+// one spoken syllable per beat, riding the same scheduler as the lights.
+// if the engine falls behind, drop the backlog at the top of the bar so
+// the voice snaps back onto the beat instead of drifting.
+function speakSyl(k) {
+  if (!paOn || !soundOn || !('speechSynthesis' in window)) return;
+  if (k === 0 && speechSynthesis.pending) speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(MODE.syllables[k]);
+  u.rate = 1.4; u.pitch = 0.7; u.volume = 1;
+  speechSynthesis.speak(u);
 }
 
 // ---------- crowd input ----------
@@ -720,7 +728,7 @@ $('sndBtn').addEventListener('click', () => {
 
 $('paBtn').addEventListener('click', () => {
   paOn = !paOn;
-  $('paBtn').textContent = 'PA ANNOUNCER: ' + (paOn ? 'ON' : 'OFF');
+  $('paBtn').textContent = 'VOICE CHANT: ' + (paOn ? 'ON' : 'OFF');
   $('paBtn').classList.toggle('on', paOn);
   if (!paOn && 'speechSynthesis' in window) speechSynthesis.cancel();
 });
