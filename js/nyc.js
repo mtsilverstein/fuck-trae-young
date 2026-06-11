@@ -2,8 +2,8 @@
 'use strict';
 
 import { state, mode, bus, SHARED_TICKER, TEST, addHype, saveTimbs } from './state.js';
-import { ensureAudio, turnstileBeep, clickClack, crinkle } from './audio.js';
-import { toast } from './fx.js';
+import { ensureAudio, turnstileBeep, clickClack, crinkle, organCharge, airhorn } from './audio.js';
+import { toast, grainTribute } from './fx.js';
 
 const el = id => document.getElementById(id);
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -220,5 +220,33 @@ export function openReceipt() {
   wrap.onclick = () => { wrap.hidden = true; };
 }
 
-// ---------- the dunk (built in Task 7) ----------
-export function initStarks() {}
+// ---------- the dunk ----------
+// May 25, 1993. A hard swipe UP — earned, never accidental.
+export function initStarks() {
+  let y0 = null, t0 = 0, cooldownUntil = 0;
+  const COOLDOWN = TEST ? 3000 : 60000;
+  addEventListener('pointerdown', e => {
+    y0 = e.clientY; t0 = performance.now();
+  }, true);
+  addEventListener('pointerup', e => {
+    if (y0 === null) return;
+    const dy = y0 - e.clientY, ms = performance.now() - t0;
+    y0 = null;
+    if (!state.session.entry) return;               // not before the turnstile
+    const tall = dy >= innerHeight * 0.35;
+    const fast = ms <= 400;
+    const due = performance.now() >= cooldownUntil;
+    if (tall && fast && due) {
+      cooldownUntil = performance.now() + COOLDOWN;
+      dunk();
+    }
+  }, true);
+}
+
+function dunk() {
+  state.session.dunks++;
+  grainTribute();
+  organCharge();
+  setTimeout(airhorn, 850);
+  navigator.vibrate?.([60, 40, 200]);
+}

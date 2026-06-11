@@ -1,7 +1,7 @@
 // js/main.js — boot, the rAF loop, and all the wiring. The building superintendent.
 'use strict';
 
-import { state, mode, MODES, setMode, addHype, milestoneText, loadPersisted, bus } from './state.js';
+import { state, mode, MODES, setMode, addHype, milestoneText, loadPersisted, bus, TEST } from './state.js';
 import * as audio from './audio.js';
 import { startChant, stopChant, chantOn } from './chant.js';
 import * as fx from './fx.js';
@@ -222,8 +222,35 @@ function loop(now) {
   }
 
   nyc.becTick();
+  cityTick();
 
   requestAnimationFrame(loop);
+}
+
+// ---------- the city keeps city-ing ----------
+// Penn rumbles on its own schedule; the animals come when they come.
+let nextRumble = performance.now() + (TEST ? 15000 : 180000 + Math.random() * 120000);
+let nextLottery = performance.now() + (TEST ? 2500 : 10000);
+const P_PIGEON = TEST ? 0.6 : 0.0133;  // ~0.08/min in real life
+const P_RAT    = TEST ? 0.35 : 0.005;  // ~0.03/min — rarer, as decreed
+
+function cityTick() {
+  const now = performance.now();
+  if (!state.session.entry) return;
+  if (now >= nextRumble) {
+    nextRumble = now + (TEST ? 15000 : 180000 + Math.random() * 120000);
+    audio.pennRumbleAudio(4);
+    fx.pennRumbleVisual();
+    nyc.tickerInject('LIRR NOW DEPARTING TRACK 19');
+  }
+  if (now >= nextLottery) {
+    nextLottery = now + (TEST ? 2500 : 10000);
+    if (!fx.animalBusy()) {
+      const r = Math.random();
+      if (r < P_PIGEON) fx.pigeon();
+      else if (r < P_PIGEON + P_RAT) fx.rat();
+    }
+  }
 }
 
 // ---------- boot ----------

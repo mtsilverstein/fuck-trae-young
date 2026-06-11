@@ -158,8 +158,51 @@ export function flashesStart() {
   }
 }
 
-// ---- placeholders that grow real in later tasks ----
-export function grainTribute() {}
-export function pigeon() {}
-export function rat() {}
-export function pennRumbleVisual() {}
+// ---------- the animals (budget: two) ----------
+let animalActive = false;
+export function animalBusy() { return animalActive; }
+
+function spawnWalker(className, parts, host) {
+  if (animalActive) return null;
+  animalActive = true;
+  const w = document.createElement('div');
+  w.className = className;
+  parts.forEach(c => {
+    const s = document.createElement('span');
+    s.className = c;
+    w.appendChild(s);
+  });
+  host.appendChild(w);
+  w.addEventListener('animationend', e => {
+    if (e.target !== w) return; // ignore child animations (head bob, etc.)
+    w.remove();
+    animalActive = false;
+  });
+  return w;
+}
+
+// struts across the board, does not acknowledge you, leaves
+export function pigeon() {
+  spawnWalker('pigeon', ['pg-body', 'pg-wing', 'pg-neck', 'pg-head', 'pg-eye', 'pg-beak', 'pg-leg pg-l1', 'pg-leg pg-l2'], el('jumbo'));
+}
+
+// rarer. silent. the slice is heavier than he is.
+export function rat() {
+  spawnWalker('rat', ['rt-slice', 'rt-crust', 'rt-tail', 'rt-body', 'rt-ear', 'rt-eye'], document.body);
+}
+
+// the LIRR is leaving and the whole building knows
+export function pennRumbleVisual() {
+  if (reducedMotion.matches) return;
+  const a = el('arena');
+  a.classList.add('rumble');
+  setTimeout(() => a.classList.remove('rumble'), 4000);
+}
+
+// MAY 25, 1993 — grain, letterbox, and the building losing its mind
+export function grainTribute() {
+  const t = el('tribute');
+  t.classList.add('go');
+  if (reducedMotion.matches) t.classList.add('rm');
+  setTimeout(() => t.classList.remove('go', 'rm'), 1600);
+}
