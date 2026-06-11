@@ -54,11 +54,12 @@ function maxEvent() {
   maxArmed = false;
   state.session.singularities++;
   fx.toast('🚨 121 dB — BING BONG SINGULARITY ACHIEVED');
-  audio.airhorn();
+  audio.organCharge();
+  setTimeout(audio.airhorn, 850);
+  setTimeout(audio.bingBong, 1600);
   fx.cameo();
   fx.rain(44);
   fx.strobe(1600);
-  setTimeout(audio.bingBong, 750);
   navigator.vibrate?.([120, 60, 120, 60, 240]);
 }
 
@@ -69,7 +70,7 @@ function press() {
   maxEvent();
   state.session.presses++;
   const m = milestoneText(state.session.presses);
-  if (m) fx.toast(m);
+  if (m) { fx.toast(m); audio.organCharge(); }
   navigator.vibrate?.(20);
   audio.pressThump();
   fx.pumpButton();
@@ -133,7 +134,8 @@ el('daggerBtn').addEventListener('click', () => {
   maxArmed = true; // the dagger button always goes nuclear
   maxEvent();
   fx.bandFlash('🗡 DAGGER 🗡', 1800);
-  audio.speak('DAGGER! BING BONG!');
+  audio.speak('BANG!');
+  setTimeout(() => audio.speak('BANG!'), 450);
 });
 
 // ---------- shake the phone like you're in section 209 ----------
