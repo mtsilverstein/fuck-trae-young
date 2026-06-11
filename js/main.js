@@ -21,16 +21,10 @@ function renderFoot(foot) {
       : [document.createTextNode(line)]));
 }
 
-function renderTicker() {
-  const s = mode().ticker.join('  •••  ');
-  el('tick').textContent = s + '  •••  ' + s + '  •••  ';
-}
-
 function applyModeDOM(announce) {
   const m = mode();
   fx.wordsRebuild(m.words);
   el('enemyLbl').textContent = m.panelLbl;
-  renderTicker();
   el('clockChip').textContent = m.clock;
   el('eraChip').textContent = m.chip;
   el('hint').textContent = m.hint;

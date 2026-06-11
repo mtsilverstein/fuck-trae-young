@@ -175,12 +175,20 @@ main{flex:1;min-height:0;display:flex}
 .status{font-family:Consolas,monospace;color:#9fc5ff;letter-spacing:4px;font-size:14px;text-align:center}
 .tickwrap{
   position:absolute;left:0;right:0;bottom:0;overflow:hidden;
-  background:rgba(0,28,62,.8);border-top:1px solid var(--line);
+  background:#0a0703;border-top:2px solid #1c1408;
+}
+.tickwrap::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.35) 0 1px, transparent 1px 2px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.35) 0 1px, transparent 1px 2px);
 }
 .tick-track{
-  display:inline-block;white-space:nowrap;padding:7px 0;
-  font-family:Consolas,monospace;font-size:13px;letter-spacing:1px;color:var(--orange);
-  animation:tick 40s linear infinite;
+  display:inline-block;white-space:nowrap;padding:8px 0;
+  font-family:Consolas,monospace;font-size:13px;letter-spacing:2px;
+  color:var(--amber);
+  text-shadow:0 0 7px rgba(252,163,17,.55);
+  animation:tick 55s linear infinite;
 }
 @keyframes tick{to{transform:translateX(-50%)}}
 

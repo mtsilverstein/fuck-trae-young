@@ -1,7 +1,7 @@
 // js/nyc.js — the borough layer: turnstile, ticker, BEC, Timbs, receipt, The Dunk.
 'use strict';
 
-import { state } from './state.js';
+import { state, mode, bus, SHARED_TICKER } from './state.js';
 import { ensureAudio, turnstileBeep, clickClack } from './audio.js';
 
 const el = id => document.getElementById(id);
@@ -73,8 +73,40 @@ export function initGate(onEnter) {
     setTimeout(() => onEnter(method), 350);
   }
 }
-export function initTicker() {}
-export function refreshTicker() {}
+// ---------- the service-alert ticker ----------
+let tickerPool = [], injectQueue = [];
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderTicker() {
+  const s = [...injectQueue, ...tickerPool].join('  •••  ');
+  el('tick').textContent = s + '  •••  ' + s + '  •••  ';
+  injectQueue = [];
+}
+
+function buildTicker() {
+  tickerPool = shuffle([...SHARED_TICKER, ...mode().ticker]);
+  renderTicker();
+}
+
+export function initTicker() {
+  buildTicker();
+  bus.addEventListener('mode', buildTicker);
+}
+
+export function refreshTicker() { buildTicker(); }
+
+// the rumble announces its train
+export function tickerInject(line) {
+  injectQueue.push(line);
+  renderTicker();
+}
 export function becTick(dtMs) {}
 export function initTimbs() {}
 export function initStarks() {}

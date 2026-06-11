@@ -6,6 +6,25 @@ export const bus = new EventTarget();
 
 export const BPM = 138, BEAT = 60 / BPM, BAR = BEAT * 4;
 
+// The board speaks in the agency's voice. Deadpan, institutional, real lore only.
+export const SHARED_TICKER = [
+  'ALL SPURS SERVICE SUSPENDED INDEFINITELY',
+  'DELAYS ON 1·2·3 DUE TO CELEBRATION AT 34 ST–PENN STATION',
+  'LIRR NOW DEPARTING TRACK 19',
+  'CRESCENT SERVICE TO ATLANTA — CANCELLED. NO REASON GIVEN.',
+  'PLANNED WORK: SECTION 209 STANDING THROUGH JULY',
+  'DOLLAR SLICE HOLDING AT $1.50 NEAR PENN STATION. INFLATION FEARS OVERSTATED.',
+  'CHOPPED CHEESE IS NOT A CHEESESTEAK.',
+  'POSTING AND TOASTING',
+  'DISHING AND SWISHING',
+  'SHAKING AND BAKING',
+  'BILLY JOEL PAUSES PIANO MAN, CONDUCTS THE CROWD INSTEAD',
+  'WESTMINSTER DOG SHOW BREACHED — THE DOGS KNOW THE WORDS',
+  'CHANT ERUPTS AT RANGERS GAME — NO BASKETBALL WAS SCHEDULED',
+  'EVERY MSG EVENT NOW LEGALLY REQUIRED TO INCLUDE THE CHANT',
+  'BING BONG'
+];
+
 // Same engine, different enemy. The chant is always three beats;
 // beatMap says which word lights up on each beat (WEM-BY = two hits).
 export const MODES = {
@@ -22,13 +41,9 @@ export const MODES = {
     hint: "MASH THE BUTTON · SHAKE THE PHONE · THE METER DECAYS LIKE TRAE'S DEFENSE",
     m100: 'Trae heard you. He is cupping his ear. DO NOT let him.',
     ticker: [
-      'BREAKING: CHANT ERUPTS AT RANGERS GAME — NO BASKETBALL WAS SCHEDULED',
-      'BILLY JOEL PAUSES PIANO MAN, CONDUCTS THE CROWD INSTEAD',
       'TRAE YOUNG REPORTS IT IS QUIET IN HERE — IT IS NOT QUIET IN HERE',
       'SECTION 209 HAS NOT SAT DOWN SINCE MAY 2021',
-      'WESTMINSTER DOG SHOW BREACHED — THE DOGS KNOW THE WORDS',
-      'EVERY MSG EVENT NOW LEGALLY REQUIRED TO INCLUDE THE CHANT',
-      'BING BONG'
+      'SERVICE ADVISORY: THE FLOATER WAS 0.9 SECONDS. THE GRUDGE IS PERMANENT.'
     ],
     foot: 'A Garden tradition since May 23, 2021 — he hit the floater with 0.9 on the clock, said it was quiet, and took a bow.<br>The Garden has not been quiet since. BING BONG.'
   },
@@ -45,12 +60,11 @@ export const MODES = {
     hint: 'MASH THE BUTTON · SHAKE THE PHONE · 7’4” AND HE STILL CAN’T BLOCK A CHANT',
     m100: 'Wemby heard you. He is signaling the mothership. DO NOT let him.',
     ticker: [
-      'BREAKING: UFO OVER 33RD & 7TH DENIED LANDING BY SECTION 209',
+      'UFO OVER 33RD & 7TH DENIED LANDING BY SECTION 209',
       'SCOUTING REPORT: BLOCKS EVERYTHING EXCEPT OUT THE NOISE',
       'HE HAS NEVER HEARD 20,000 PEOPLE CONJUGATE FUCK IN UNISON',
       'TONY PARKER DID NOT WARN HIM ABOUT THIS',
       'THE GARDEN HAS NO CEILING — STILL NOT ENOUGH ROOM FOR HIM',
-      'SECTION 209 HAS NOT SAT DOWN SINCE MAY 2021',
       'FRENCH FOR BING BONG: BING BONG'
     ],
     foot: 'Finals edition — new enemy, same energy. The chant adapts. The Garden does not.<br>BING BONG.'
