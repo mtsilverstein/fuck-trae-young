@@ -49,7 +49,7 @@ Plain `<script type="module">`. Deploy pipeline unchanged (vercel deploy --prod)
 ## Feature specs
 
 ### Entry — MetroCard turnstile (the cinematic open)
-Black screen, faint Penn rumble loop (silent until first gesture — visual-only before unlock). Turnstile reader slot with amber LCD reading "INSERT CARD"; a MetroCard sits ready. User drags the card through the slot (pointer events; desktop = click-drag; double-click = instant valid swipe fallback). Swipe completing the slot distance in 150–900ms = valid; outside the window → amber LCD: "PLEASE SWIPE AGAIN AT THIS TURNSTILE." plus error beep. Valid → LCD "GO" in green, mechanical click-clack, the gesture resumes/creates AudioContext + speech warm-up + motion permission + wake lock. Then: arena light sweep (staged reveals, ~1.6s total), crowd murmur fades in, title slams: FUCK TRAE YOUNG (or FUCK WEMBY per mode), EST. 2021 beneath. After 2 failed swipes, a quiet underlined text link appears: "hop the turnstile" (instant entry; it still counts as the unlock gesture). Reduced-motion: sweep becomes a fade.
+Black screen, faint Penn rumble loop (silent until first gesture — visual-only before unlock). Turnstile reader slot with amber LCD reading "INSERT CARD"; "NY OR NOWHERE" is etched into the turnstile housing metal (embossed text, same steel tone, catches the light sweep on entry). A MetroCard sits ready — gold/blue, plays it straight, GOOD THRU stays GOOD THRU. User drags the card through the slot (pointer events; desktop = click-drag; double-click = instant valid swipe fallback). Swipe completing the slot distance in 150–900ms = valid; outside the window → amber LCD: "PLEASE SWIPE AGAIN AT THIS TURNSTILE" (all caps, no period — the real reader doesn't punctuate) plus error beep. Valid → LCD "GO" in green, mechanical click-clack, the gesture resumes/creates AudioContext + speech warm-up + motion permission + wake lock. Then: arena light sweep (staged reveals, ~1.6s total), crowd murmur fades in, title slams: FUCK TRAE YOUNG (or FUCK WEMBY per mode), EST. 2021 beneath. After 2 failed swipes, a quiet underlined text link appears: "hop the turnstile" (instant entry; it still counts as the unlock gesture). Reduced-motion: sweep becomes a fade.
 
 ### Jumbotron overhaul
 Layered arena depth: crowd-silhouette rows at the bottom of the viewport (dark, parallax-still), random camera flashes twinkling in the dark upper bowl (CSS keyframed dots, sparse). Board gets a bezel (steel chrome borders), LED pixel-grid texture overlay, and bloom on lit words (layered text-shadow only — no filter:blur on text for perf). Chant words slam: lit word scales in with a 90ms impact curve + 4px directional screen-kick matching the stomp. dB meter becomes a segmented LED VU strip (24 segments, green→amber→red, peak-hold tick). Scoreboard chrome styled like the '90s boards: beveled panels, condensed numerals.
@@ -70,9 +70,9 @@ Restyled as an amber dot-matrix service-alert strip (subway countdown clock look
 - "LIRR NOW DEPARTING TRACK 19" (also fires synced with each Penn rumble)
 - "CRESCENT SERVICE TO ATLANTA — CANCELLED. NO REASON GIVEN."
 - "PLANNED WORK: SECTION 209 STANDING THROUGH JULY"
-- "DOLLAR SLICE STILL $1.50 AT 33RD AND 7TH. INFLATION FEARS OVERSTATED."
-- "CHOPPED CHEESE IS NOT A CHEESESTEAK. AN MTA PSA."
-- Clyde-isms interleaved: "STOMPING AND CHOMPING", "WISHING AND SWISHING", "DISHING AND SWISHING"
+- "DOLLAR SLICE HOLDING AT $1.50 NEAR PENN STATION. INFLATION FEARS OVERSTATED."
+- "CHOPPED CHEESE IS NOT A CHEESESTEAK."
+- Clyde-isms interleaved, canon only: "POSTING AND TOASTING", "DISHING AND SWISHING", "SHAKING AND BAKING"
 - Carried-over lore lines that pass the Tone Law (Rangers game eruption, Billy Joel, "IT IS NOT QUIET IN HERE", Westminster dogs, BING BONG). Mode-specific lines stay mode-specific.
 
 ### NYC gimmicks
