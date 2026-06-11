@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>FUCK TRAE YOUNG — The Official MSG Chant Machine</title>
+<style>
+  :root{
+    --blue:#006BB6;
+    --orange:#F58426;
+    --silver:#BEC0C2;
+    --panel:#0b0e16;
+    --line:#1d2742;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #14213d 0%, #0a0a0f 55%, #050507 100%);
+    color:#fff;
+    font-family:'Segoe UI',system-ui,sans-serif;
+    overflow:hidden;
+    user-select:none;
+  }
+
+  #arena{
+    height:100%;
+    max-width:1150px;
+    margin:0 auto;
+    padding:16px 18px 10px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  #arena.shaking{animation:shake .12s linear infinite}
+  @keyframes shake{
+    0%{transform:translate(0,0)}
+    25%{transform:translate(1.6px,-1px)}
+    50%{transform:translate(-1.6px,1px)}
+    75%{transform:translate(1px,1.6px)}
+    100%{transform:translate(0,0)}
+  }
+
+  /* ---------- scoreboard ---------- */
+  #board{display:flex;justify-content:space-between;align-items:stretch;gap:12px}
+  .panel{
+    background:var(--panel);
+    border:2px solid var(--line);
+    border-radius:10px;
+    padding:8px 16px;
+    text-align:center;
+    display:flex;flex-direction:column;justify-content:center;gap:2px;
+    min-width:170px;
+  }
+  .panel .lbl{font-size:10px;letter-spacing:2px;color:var(--silver)}
+  .panel .val{font-family:Consolas,monospace;font-size:28px;font-weight:700;color:var(--orange);text-shadow:0 0 12px rgba(245,132,38,.5)}
+  .mid{text-align:center;display:flex;flex-direction:column;gap:3px;justify-content:center}
+  .msg-title{font-family:Impact,'Arial Black',sans-serif;font-size:clamp(18px,3vw,30px);letter-spacing:5px;color:#fff}
+  .msg-sub{font-size:10px;letter-spacing:3px;color:var(--silver)}
+  .chips{display:flex;gap:8px;justify-content:center;margin-top:2px}
+  .chip{
+    font-family:Consolas,monospace;font-size:12px;letter-spacing:1px;
+    background:#081a2e;border:1px solid var(--blue);color:#9fc5ff;
+    border-radius:4px;padding:2px 8px;
+  }
+  .chip.clock{color:var(--orange);border-color:var(--orange);animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:.45}}
+
+  /* ---------- jumbotron ---------- */
+  main{flex:1;min-height:0;display:flex}
+  .marquee{
+    flex:1;display:flex;
+    padding:13px;border-radius:20px;
+    background-color:#0c1322;
+    background-image:
+      radial-gradient(circle, #ffd98a 2.5px, rgba(255,217,138,.12) 3.5px, transparent 4.5px),
+      radial-gradient(circle, #ffb347 2.5px, rgba(255,179,71,.10) 3.5px, transparent 4.5px);
+    background-size:24px 24px,24px 24px;
+    background-position:0 0,12px 12px;
+    animation:bulbs 1.1s steps(1,end) infinite alternate;
+    box-shadow:0 0 40px rgba(245,132,38,.12);
+  }
+  @keyframes bulbs{to{background-position:12px 12px,0 0}}
+  #jumbo{
+    flex:1;min-height:0;
+    position:relative;overflow:hidden;
+    background:radial-gradient(800px 400px at 50% 0%, #0d1626 0%, #05060a 70%);
+    border-radius:12px;
+    border:2px solid #060a14;
+    box-shadow:inset 0 0 80px rgba(0,40,90,.35);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+    padding:14px 14px 44px;
+    transition:box-shadow .08s;
+  }
+  #jumbo.flash{box-shadow:inset 0 0 130px rgba(245,132,38,.28)}
+  .words{display:flex;flex-wrap:wrap;justify-content:center;column-gap:3vw;row-gap:0}
+  .word{
+    font-family:Impact,'Arial Black',sans-serif;
+    font-size:clamp(44px,10vw,128px);
+    letter-spacing:3px;
+    color:#1b3a5c;
+    -webkit-text-stroke:2px #0d1f33;
+    transition:color 70ms,text-shadow 70ms,transform 70ms;
+  }
+  .word.lit{
+    color:var(--orange);
+    text-shadow:0 0 18px rgba(245,132,38,.95),0 0 70px rgba(245,132,38,.5);
+    transform:scale(1.07);
+  }
+  #jumbo.idle .word{animation:breathe 2.8s ease-in-out infinite}
+  #jumbo.idle .word:nth-child(2){animation-delay:.3s}
+  #jumbo.idle .word:nth-child(3){animation-delay:.6s}
+  @keyframes breathe{50%{opacity:.55}}
+  .status{font-family:Consolas,monospace;color:#9fc5ff;letter-spacing:4px;font-size:14px;text-align:center}
+  .tickwrap{
+    position:absolute;left:0;right:0;bottom:0;overflow:hidden;
+    background:rgba(0,28,62,.8);border-top:1px solid var(--line);
+  }
+  .tick-track{
+    display:inline-block;white-space:nowrap;padding:7px 0;
+    font-family:Consolas,monospace;font-size:13px;letter-spacing:1px;color:var(--orange);
+    animation:tick 40s linear infinite;
+  }
+  @keyframes tick{to{transform:translateX(-50%)}}
+
+  /* ---------- controls ---------- */
+  #controls{display:flex;flex-direction:column;gap:10px}
+  .meter-wrap{display:flex;align-items:center;gap:12px}
+  .mlbl{font-size:11px;letter-spacing:3px;color:var(--silver);white-space:nowrap}
+  .meter{flex:1;height:26px;background:var(--panel);border:2px solid var(--line);border-radius:13px;overflow:hidden}
+  #fill{height:100%;width:0%;background:linear-gradient(90deg,var(--blue),var(--orange) 65%,#ff3b3b);transition:width .12s}
+  .db{font-family:Consolas,monospace;font-size:20px;color:#fff;width:96px;text-align:right;white-space:nowrap}
+  .btnrow{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+  #chantBtn{
+    font-family:Impact,'Arial Black',sans-serif;
+    font-size:clamp(26px,4vw,44px);letter-spacing:4px;
+    padding:14px 54px;border-radius:999px;
+    border:4px solid #ff9d3f;
+    background:linear-gradient(180deg,#ff8c1a,#e35b00);
+    color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35);
+    cursor:pointer;
+    box-shadow:0 8px 0 #7a3500,0 12px 30px rgba(245,132,38,.35);
+  }
+  #chantBtn:hover{filter:brightness(1.08)}
+  #chantBtn:active{transform:translateY(6px);box-shadow:0 2px 0 #7a3500}
+  #chantBtn.pump{animation:pump .14s ease-out}
+  @keyframes pump{40%{transform:scale(.94)}}
+  .pill{
+    background:var(--panel);border:2px solid var(--line);color:var(--silver);
+    padding:10px 16px;border-radius:999px;
+    font-family:Consolas,monospace;font-size:13px;letter-spacing:1px;cursor:pointer;
+  }
+  .pill.on{border-color:var(--orange);color:var(--orange)}
+  .hint{font-size:11px;letter-spacing:2px;color:#5b6678;text-align:center}
+
+  footer{font-size:11.5px;color:#6b7280;text-align:center;line-height:1.5;padding-bottom:4px}
+
+  /* ---------- fx ---------- */
+  #toasts{position:fixed;top:18px;right:18px;display:flex;flex-direction:column;gap:8px;z-index:50;max-width:340px}
+  .toast{
+    background:#101626;border-left:4px solid var(--orange);
+    padding:10px 14px;border-radius:6px;font-size:14px;color:#fff;
+    box-shadow:0 6px 20px rgba(0,0,0,.5);
+    animation:toastIn .25s ease-out;
+    transition:opacity .5s,transform .5s;
+  }
+  .toast.bye{opacity:0;transform:translateX(20px)}
+  @keyframes toastIn{from{opacity:0;transform:translateX(30px)}}
+  .drop{
+    position:fixed;top:-8vh;z-index:40;pointer-events:none;will-change:transform;
+    animation:fall linear forwards;
+  }
+  @keyframes fall{to{transform:translateY(125vh) rotate(55deg)}}
+  .trae{
+    position:fixed;left:50%;bottom:-45vh;transform:translateX(-50%);
+    z-index:45;text-align:center;pointer-events:none;
+    transition:bottom .8s cubic-bezier(.2,.9,.3,1.15);
+  }
+  .trae .emoji{font-size:15vmin;display:inline-block;transition:transform .5s ease-in}
+  .trae.bow .emoji{transform:rotate(80deg) translateX(2vmin)}
+  .trae .cap{font-family:Impact,'Arial Black',sans-serif;letter-spacing:3px;color:#ff5b5b;font-size:17px;margin-top:6px;text-shadow:0 0 14px rgba(255,60,60,.6)}
+
+  #scan{
+    position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.45;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.20) 0 2px,transparent 2px 4px);
+  }
+
+  /* ---------- gate ---------- */
+  #gate{
+    position:fixed;inset:0;z-index:100;cursor:pointer;
+    background:rgba(3,4,8,.97);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+    text-align:center;padding:20px;
+    transition:opacity .4s;
+  }
+  .g-sub{font-size:13px;letter-spacing:6px;color:var(--silver)}
+  #gate h1{
+    font-family:Impact,'Arial Black',sans-serif;
+    font-size:clamp(58px,13vw,150px);
+    line-height:.95;letter-spacing:4px;
+    color:var(--orange);
+    text-shadow:6px 6px 0 var(--blue),0 0 60px rgba(245,132,38,.35);
+  }
+  .g-enter{
+    font-family:Consolas,monospace;font-size:18px;letter-spacing:4px;color:#fff;
+    animation:blink 1.1s steps(1) infinite;
+  }
+  .g-warn{font-size:12px;color:#6b7280;max-width:460px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div id="arena">
+  <header id="board">
+    <div class="panel">
+      <div class="lbl">TRAE — FUCKS GIVEN</div>
+      <div class="val">0</div>
+    </div>
+    <div class="mid">
+      <div class="msg-title">MADISON SQVARE GARDEN</div>
+      <div class="msg-sub">THE WORLD'S MOST FAMOUS ARENA</div>
+      <div class="chips">
+        <span class="chip">4TH QTR</span>
+        <span class="chip clock">00:00.9</span>
+        <span class="chip">EST. MAY 23, 2021</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="lbl">GARDEN — FUCKS CHANTED</div>
+      <div class="val" id="chantCount">0</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="marquee">
+      <div id="jumbo" class="idle">
+        <div class="words">
+          <span class="word">FUCK</span>
+          <span class="word">TRAE</span>
+          <span class="word">YOUNG</span>
+        </div>
+        <div class="status" id="band">THE GARDEN IS WAITING</div>
+        <div class="tickwrap"><div class="tick-track" id="tick"></div></div>
+      </div>
+    </div>
+  </main>
+
+  <section id="controls">
+    <div class="meter-wrap">
+      <span class="mlbl">GARDEN&nbsp;NOISE</span>
+      <div class="meter"><div id="fill"></div></div>
+      <span id="db" class="db">— dB</span>
+    </div>
+    <div class="btnrow">
+      <button class="pill on" id="sndBtn">SOUND: ON</button>
+      <button id="chantBtn">🗣 CHANT</button>
+      <button class="pill" id="paBtn">PA ANNOUNCER: OFF</button>
+    </div>
+    <div class="hint">MASH THE BUTTON · SPACEBAR WORKS · THE METER DECAYS LIKE TRAE'S DEFENSE</div>
+  </section>
+
+  <footer>
+    A Garden tradition since May 23, 2021 — he hit the floater with 0.9 on the clock, said it was quiet, and took a bow.<br>
+    The Garden has not been quiet since. BING BONG.
+  </footer>
+</div>
+
+<div id="toasts"></div>
+<div id="scan"></div>
+
+<div id="gate">
+  <div class="g-sub">MADISON SQUARE GARDEN PRESENTS</div>
+  <h1>FUCK<br>TRAE<br>YOUNG</h1>
+  <div class="g-enter">▶ TAP TO ENTER THE GARDEN ◀</div>
+  <div class="g-warn">⚠️ Contains synthesized crowd noise, rhythmic profanity, air horns, and zero respect for Trae Young. He took a bow. We took it personally.</div>
+</div>
+
+<script>
+'use strict';
+// ============================================================
+//  FUCK TRAE YOUNG — The Official MSG Chant Machine
+//  100% vanilla, 100% offline, 0% respect.
+// ============================================================
+const $ = id => document.getElementById(id);
+const WORDS = [...document.querySelectorAll('.word')];
+
+// ---------- state ----------
+let hype = 0;
+let soundOn = true, paOn = false;
+let ctx = null, master = null, crowdGain = null, crowdFilter = null, noiseBuf = null;
+let chantOn = false, schedTimer = null, nextBar = 0, barIndex = 0;
+let sessionPresses = 0, maxArmed = true, cameoBusy = false;
+let lastCrowdSet = 0;
+let lifetime = 0;
+try { lifetime = parseInt(localStorage.getItem('fty_chants') || '0', 10) || 0; } catch (e) {}
+
+const BPM = 138, BEAT = 60 / BPM, BAR = BEAT * 4;
+
+const MILESTONES = {
+  10:  'Spike Lee is on his feet.',
+  25:  'A Rangers crowd just joined in. There is no basketball today.',
+  50:  'Penn Station: every platform, same three words.',
+  100: 'Trae heard you. He is cupping his ear. DO NOT let him.',
+  200: "Billy Joel just modulated 'Piano Man' into the chant's key.",
+  365: 'The Westminster Dog Show has been breached. The dogs know the words.',
+  500: 'Your banner is going up in the rafters. It just says the chant.'
+};
+
+// ---------- ticker ----------
+const TICK_ITEMS = [
+  'BREAKING: CHANT ERUPTS AT RANGERS GAME — NO BASKETBALL WAS SCHEDULED',
+  'BILLY JOEL PAUSES PIANO MAN, CONDUCTS THE CROWD INSTEAD',
+  'TRAE YOUNG REPORTS IT IS QUIET IN HERE — IT IS NOT QUIET IN HERE',
+  'SECTION 209 HAS NOT SAT DOWN SINCE MAY 2021',
+  'WESTMINSTER DOG SHOW BREACHED — THE DOGS KNOW THE WORDS',
+  'EVERY MSG EVENT NOW LEGALLY REQUIRED TO INCLUDE THE CHANT',
+  'BING BONG'
+].join('  •••  ');
+$('tick').textContent = TICK_ITEMS + '  •••  ' + TICK_ITEMS + '  •••  ';
+
+// ---------- audio engine ----------
+function ensureAudio() {
+  if (!ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    ctx = new AC();
+    master = ctx.createGain();
+    master.gain.value = soundOn ? 1 : 0;
+    master.connect(ctx.destination);
+
+    noiseBuf = (() => {
+      const b = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+      const d = b.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      return b;
+    })();
+
+    // crowd bed: looping noise, opens up as hype climbs
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf; src.loop = true;
+    crowdFilter = ctx.createBiquadFilter();
+    crowdFilter.type = 'lowpass'; crowdFilter.frequency.value = 550; crowdFilter.Q.value = 0.4;
+    crowdGain = ctx.createGain(); crowdGain.gain.value = 0;
+    src.connect(crowdFilter); crowdFilter.connect(crowdGain); crowdGain.connect(master);
+    src.start();
+  }
+  if (ctx.state === 'suspended') ctx.resume();
+}
+
+function burst(t, { type = 'bandpass', freq = 500, q = 0.8, peak = 0.3, a = 0.03, d = 0.3 } = {}) {
+  const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
+  const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(peak, t + a);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + a + d);
+  s.connect(f); f.connect(g); g.connect(master);
+  s.start(t); s.stop(t + a + d + 0.05);
+}
+
+function thump(t, peak = 0.6) {
+  const o = ctx.createOscillator(); o.type = 'sine';
+  o.frequency.setValueAtTime(130, t);
+  o.frequency.exponentialRampToValueAtTime(45, t + 0.13);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(peak, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+  o.connect(g); g.connect(master);
+  o.start(t); o.stop(t + 0.2);
+}
+
+// one syllable of 20,000 people yelling in unison
+function syllable(t, k) {
+  const power = 0.32 + (hype / 100) * 0.45;
+  burst(t, { freq: 430 + k * 150, q: 0.7, peak: power, a: 0.035, d: k === 2 ? 0.42 : 0.26 });
+  thump(t, 0.45 + (hype / 100) * 0.25);
+  for (let i = 0; i < 3; i++) {
+    burst(t + Math.random() * 0.045, { type: 'highpass', freq: 2400, q: 0.7, peak: 0.09, a: 0.005, d: 0.06 });
+  }
+}
+
+function boo() {
+  ensureAudio();
+  const t = ctx.currentTime;
+  const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
+  const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.1;
+  f.frequency.setValueAtTime(300, t);
+  f.frequency.linearRampToValueAtTime(150, t + 1.8);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.5, t + 0.35);
+  g.gain.setValueAtTime(0.5, t + 1.2);
+  g.gain.linearRampToValueAtTime(0.0001, t + 2);
+  s.connect(f); f.connect(g); g.connect(master);
+  s.start(t); s.stop(t + 2.1);
+}
+
+function airhorn() {
+  ensureAudio();
+  const t0 = ctx.currentTime;
+  [[0, 0.22], [0.32, 0.22], [0.64, 0.9]].forEach(([off, dur]) => {
+    const t = t0 + off;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1500;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.4, t + 0.02);
+    g.gain.setValueAtTime(0.4, t + dur * 0.8);
+    g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    lp.connect(g); g.connect(master);
+    [466, 469, 233].forEach((fr, i) => {
+      const o = ctx.createOscillator();
+      o.type = i === 2 ? 'square' : 'sawtooth';
+      o.frequency.setValueAtTime(fr, t);
+      o.frequency.linearRampToValueAtTime(fr * 0.96, t + dur);
+      const og = ctx.createGain(); og.gain.value = i === 2 ? 0.16 : 0.28;
+      o.connect(og); og.connect(lp);
+      o.start(t); o.stop(t + dur + 0.02);
+    });
+  });
+}
+
+// ---------- chant scheduler ----------
+function startChant() {
+  if (chantOn || !ctx) return;
+  chantOn = true;
+  $('jumbo').classList.remove('idle');
+  nextBar = ctx.currentTime + 0.06;
+  schedTimer = setInterval(schedule, 25);
+}
+
+function stopChant() {
+  if (!chantOn) return;
+  chantOn = false;
+  clearInterval(schedTimer);
+  setTimeout(() => {
+    if (!chantOn) { lightWord(-1); $('jumbo').classList.add('idle'); }
+  }, 700);
+}
+
+function schedule() {
+  while (nextBar < ctx.currentTime + 0.18) {
+    scheduleBar(nextBar);
+    nextBar += BAR;
+  }
+}
+
+function scheduleBar(t) {
+  for (let k = 0; k < 3; k++) {
+    const st = t + k * BEAT;
+    syllable(st, k);
+    visualAt(st, () => lightWord(k));
+  }
+  visualAt(t + 3 * BEAT, () => { if (chantOn) lightWord(-1); });
+  barIndex++;
+  lifetime++;
+  $('chantCount').textContent = lifetime.toLocaleString();
+  try { localStorage.setItem('fty_chants', String(lifetime)); } catch (e) {}
+  if ((barIndex & 1) === 0) paMaybe(t);
+}
+
+function visualAt(t, fn) {
+  setTimeout(fn, Math.max(0, (t - ctx.currentTime) * 1000));
+}
+
+function lightWord(i) {
+  WORDS.forEach((w, j) => w.classList.toggle('lit', j === i));
+  if (i >= 0) {
+    $('jumbo').classList.add('flash');
+    setTimeout(() => $('jumbo').classList.remove('flash'), 90);
+  }
+}
+
+function paMaybe(t) {
+  if (!paOn || !('speechSynthesis' in window)) return;
+  if (speechSynthesis.speaking || speechSynthesis.pending) return;
+  visualAt(t, () => {
+    const u = new SpeechSynthesisUtterance('Fuck! Trae! Young!');
+    u.rate = 1.1; u.pitch = 0.5; u.volume = 0.9;
+    speechSynthesis.speak(u);
+  });
+}
+
+// ---------- crowd input ----------
+function maxEvent() {
+  if (!maxArmed || hype < 99.5) return;
+  maxArmed = false;
+  toast('🚨 121 dB — BING BONG SINGULARITY ACHIEVED');
+  airhorn();
+  cameo();
+  rain(44);
+}
+
+function press() {
+  ensureAudio();
+  hype = Math.min(100, hype + 7);
+  maxEvent();
+  sessionPresses++;
+  if (MILESTONES[sessionPresses]) toast(MILESTONES[sessionPresses]);
+  if (ctx) {
+    const t = ctx.currentTime;
+    thump(t, 0.32);
+    burst(t, { type: 'highpass', freq: 2600, q: 0.7, peak: 0.08, a: 0.004, d: 0.05 });
+  }
+  const b = $('chantBtn');
+  b.classList.remove('pump'); void b.offsetWidth; b.classList.add('pump');
+}
+
+$('chantBtn').addEventListener('click', ev => { press(); ev.currentTarget.blur(); });
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); press(); }
+});
+
+// ---------- fx ----------
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  $('toasts').appendChild(t);
+  setTimeout(() => t.classList.add('bye'), 3400);
+  setTimeout(() => t.remove(), 4000);
+}
+
+function rain(n) {
+  const EMO = ['🖕', '🖕', '🖕', '🖕', '🏀', '🧡', '💙'];
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div');
+    d.className = 'drop';
+    d.textContent = EMO[Math.floor(Math.random() * EMO.length)];
+    d.style.left = Math.random() * 100 + 'vw';
+    d.style.fontSize = (22 + Math.random() * 34) + 'px';
+    d.style.animationDuration = (1.4 + Math.random() * 1.6) + 's';
+    d.style.animationDelay = (Math.random() * 0.9) + 's';
+    document.body.appendChild(d);
+    d.addEventListener('animationend', () => d.remove());
+  }
+}
+
+function cameo() {
+  if (cameoBusy) return;
+  cameoBusy = true;
+  const w = document.createElement('div');
+  w.className = 'trae';
+  w.innerHTML = '<span class="emoji">🤫</span><div class="cap">HE&rsquo;S BOWING — BOO LOUDER</div>';
+  document.body.appendChild(w);
+  requestAnimationFrame(() => { w.style.bottom = '6vh'; });
+  setTimeout(() => { w.classList.add('bow'); boo(); }, 900);
+  setTimeout(() => { w.style.bottom = '-45vh'; }, 2900);
+  setTimeout(() => { w.remove(); cameoBusy = false; }, 3900);
+}
+
+// ---------- toggles ----------
+$('sndBtn').addEventListener('click', () => {
+  soundOn = !soundOn;
+  ensureAudio();
+  master.gain.setTargetAtTime(soundOn ? 1 : 0, ctx.currentTime, 0.05);
+  $('sndBtn').textContent = 'SOUND: ' + (soundOn ? 'ON' : 'OFF');
+  $('sndBtn').classList.toggle('on', soundOn);
+  if (!soundOn && 'speechSynthesis' in window) speechSynthesis.cancel();
+});
+
+$('paBtn').addEventListener('click', () => {
+  paOn = !paOn;
+  $('paBtn').textContent = 'PA ANNOUNCER: ' + (paOn ? 'ON' : 'OFF');
+  $('paBtn').classList.toggle('on', paOn);
+  if (!paOn && 'speechSynthesis' in window) speechSynthesis.cancel();
+});
+
+// ---------- gate ----------
+$('gate').addEventListener('click', () => {
+  ensureAudio();
+  const g = $('gate');
+  g.style.opacity = '0';
+  setTimeout(() => g.remove(), 450);
+  hype = Math.max(hype, 16);
+  toast('Welcome to the Garden. You know the words.');
+}, { once: true });
+
+// ---------- main loop ----------
+function bandLabel() {
+  if (hype < 1)    return 'THE GARDEN IS WAITING';
+  if (hype < 25)   return 'LIBRARY MODE (CELTICS HOME GAME)';
+  if (hype < 50)   return 'REGULAR SEASON RUMBLE';
+  if (hype < 75)   return 'PLAYOFF GARDEN';
+  if (hype < 99.5) return 'GAME 7 DELIRIUM';
+  return 'BING BONG SINGULARITY';
+}
+
+let lastT = performance.now();
+function loop(now) {
+  const dt = Math.min(0.1, (now - lastT) / 1000);
+  lastT = now;
+
+  if (hype > 0) hype = Math.max(0, hype - dt * (2.2 + hype * 0.030));
+
+  $('fill').style.width = hype + '%';
+  $('db').textContent = (hype > 0.5 ? Math.round(58 + hype * 0.63) : '—') + ' dB';
+  $('band').textContent = bandLabel();
+  $('arena').classList.toggle('shaking', hype > 72);
+
+  if (ctx) {
+    if (now - lastCrowdSet > 120) {
+      lastCrowdSet = now;
+      crowdGain.gain.setTargetAtTime(0.012 + (hype / 100) * 0.22, ctx.currentTime, 0.25);
+      crowdFilter.frequency.setTargetAtTime(450 + hype * 13, ctx.currentTime, 0.3);
+    }
+    if (hype > 5 && !chantOn) startChant();
+    if (hype < 3 && chantOn) stopChant();
+  }
+
+  maxEvent();
+  if (hype < 40) maxArmed = true;
+
+  requestAnimationFrame(loop);
+}
+
+$('chantCount').textContent = lifetime.toLocaleString();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
