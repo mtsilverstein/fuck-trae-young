@@ -221,7 +221,7 @@ function loop(now) {
     el('chantCount').textContent = state.lifetime.toLocaleString();
   }
 
-  nyc.becTick(dt * 1000);
+  nyc.becTick();
 
   requestAnimationFrame(loop);
 }
@@ -232,7 +232,9 @@ applyModeDOM(false);
 fx.flashesStart();
 nyc.initTicker();
 nyc.initTimbs();
+nyc.initBec();
 nyc.initStarks();
+el('receiptBtn').addEventListener('click', nyc.openReceipt);
 initWorldwide();
 el('chantCount').textContent = state.lifetime.toLocaleString();
 requestAnimationFrame(loop);
