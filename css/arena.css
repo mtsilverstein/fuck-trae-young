@@ -101,6 +101,10 @@ body{
 }
 .chip.clock{color:var(--orange);border-color:var(--orange);animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:.45}}
+#worldwide{display:flex;gap:8px;justify-content:center;align-items:baseline;margin-top:3px}
+#worldwide[hidden]{display:none}
+.ww-lbl{font-size:9px;letter-spacing:2px;color:var(--silver)}
+.ww-n{font-family:Consolas,monospace;font-size:13px;color:var(--amber);text-shadow:0 0 8px rgba(252,163,17,.5)}
 
 /* ---------- jumbotron ---------- */
 main{flex:1;min-height:0;display:flex}
