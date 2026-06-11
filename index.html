@@ -160,6 +160,20 @@
     font-family:Consolas,monospace;font-size:13px;letter-spacing:1px;cursor:pointer;
   }
   .pill.on{border-color:var(--orange);color:var(--orange)}
+  .btnrow2{gap:14px}
+  .btn2{
+    font-family:Impact,'Arial Black',sans-serif;
+    font-size:clamp(16px,2.4vw,24px);letter-spacing:2px;
+    padding:10px 30px;border-radius:999px;color:#fff;cursor:pointer;
+    border:3px solid #4aa3e8;
+    background:linear-gradient(180deg,#1b6fb8,#0d4e8c);
+    text-shadow:0 2px 0 rgba(0,0,0,.35);
+    box-shadow:0 5px 0 #06304f,0 8px 18px rgba(0,107,182,.35);
+  }
+  .btn2:hover{filter:brightness(1.1)}
+  .btn2:active{transform:translateY(4px);box-shadow:0 1px 0 #06304f}
+  .btn2.red{border-color:#ff8a7a;background:linear-gradient(180deg,#d63a2f,#a01f16);box-shadow:0 5px 0 #5e0e08,0 8px 18px rgba(214,58,47,.35)}
+  .btn2.red:active{box-shadow:0 1px 0 #5e0e08}
   .hint{font-size:11px;letter-spacing:2px;color:#5b6678;text-align:center}
 
   footer{font-size:11.5px;color:#6b7280;text-align:center;line-height:1.5;padding-bottom:4px}
@@ -193,6 +207,9 @@
     position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.45;
     background:repeating-linear-gradient(0deg,rgba(0,0,0,.20) 0 2px,transparent 2px 4px);
   }
+  #strobe{position:fixed;inset:0;z-index:55;pointer-events:none;opacity:0;background:#fff}
+  #strobe.go{animation:strobeFx .26s steps(2,end) infinite}
+  @keyframes strobeFx{0%{opacity:.30;background:var(--blue)}50%{opacity:.30;background:var(--orange)}100%{opacity:0}}
 
   /* ---------- gate ---------- */
   #gate{
@@ -239,6 +256,8 @@
     .db{width:64px;font-size:15px}
     .btnrow{gap:10px}
     #chantBtn{padding:14px 14vw}
+    .btnrow2{gap:10px}
+    .btn2{flex:1;padding:10px 8px;font-size:15px;letter-spacing:1px}
     .pill{padding:8px 10px;font-size:11px}
     .hint{font-size:9px;letter-spacing:1px}
     footer{font-size:9.5px}
@@ -295,6 +314,10 @@
       <button class="pill on" id="paBtn">VOICE CHANT: ON</button>
       <button class="pill" id="modeBtn">VS: TRAE</button>
     </div>
+    <div class="btnrow btnrow2">
+      <button class="btn2" id="bingBtn">🔔 BING BONG</button>
+      <button class="btn2 red" id="daggerBtn">🗡 DAGGER</button>
+    </div>
     <div class="hint" id="hint">MASH THE BUTTON · SPACEBAR WORKS · THE METER DECAYS LIKE TRAE'S DEFENSE</div>
   </section>
 
@@ -306,6 +329,7 @@
 
 <div id="toasts"></div>
 <div id="scan"></div>
+<div id="strobe"></div>
 
 <div id="gate">
   <div class="g-sub">MADISON SQUARE GARDEN PRESENTS</div>
@@ -327,6 +351,8 @@ let WORDS = [...document.querySelectorAll('.word')];
 // ---------- state ----------
 let hype = 0;
 let soundOn = true, paOn = true, speechWarmed = false;
+let arenaBus = null, wakeLock = null, shakeReady = false, lastShake = 0;
+let bandOverride = null, bandOverrideUntil = 0;
 let ctx = null, master = null, crowdGain = null, crowdFilter = null, noiseBuf = null;
 let chantOn = false, schedTimer = null, nextBar = 0, barIndex = 0;
 let sessionPresses = 0, maxArmed = true, cameoBusy = false;
@@ -338,6 +364,7 @@ const BPM = 138, BEAT = 60 / BPM, BAR = BEAT * 4;
 
 const MILESTONES = {
   10:  'Spike Lee is on his feet.',
+  11:  'Number 11 sees you. The Captain nods.',
   25:  'A Rangers crowd just joined in. There is no basketball today.',
   50:  'Penn Station: every platform, same three words.',
   100: 'Trae heard you. He is cupping his ear. DO NOT let him.',
@@ -360,7 +387,7 @@ const MODES = {
     rain: ['🖕', '🖕', '🖕', '🖕', '🏀', '🧡', '💙'],
     clock: '00:00.9',
     chip: 'EST. MAY 23, 2021',
-    hint: "MASH THE BUTTON · SPACEBAR WORKS · THE METER DECAYS LIKE TRAE'S DEFENSE",
+    hint: "MASH THE BUTTON · SHAKE THE PHONE · THE METER DECAYS LIKE TRAE'S DEFENSE",
     m100: 'Trae heard you. He is cupping his ear. DO NOT let him.',
     ticker: [
       'BREAKING: CHANT ERUPTS AT RANGERS GAME — NO BASKETBALL WAS SCHEDULED',
@@ -383,7 +410,7 @@ const MODES = {
     rain: ['🖕', '🖕', '🖕', '🖕', '🏀', '🛸', '🧡', '💙'],
     clock: '7:04',
     chip: 'FINALS · JUNE 2026',
-    hint: 'MASH THE BUTTON · SPACEBAR WORKS · 7&#39;4&#34; AND HE STILL CAN&rsquo;T BLOCK A CHANT',
+    hint: 'MASH THE BUTTON · SHAKE THE PHONE · 7&#39;4&#34; AND HE STILL CAN&rsquo;T BLOCK A CHANT',
     m100: 'Wemby heard you. He is signaling the mothership. DO NOT let him.',
     ticker: [
       'BREAKING: UFO OVER 33RD &amp; 7TH DENIED LANDING BY SECTION 209',
@@ -488,13 +515,23 @@ function ensureAudio() {
     crowdGain = ctx.createGain(); crowdGain.gain.value = 0;
     src.connect(crowdFilter); crowdFilter.connect(crowdGain); crowdGain.connect(master);
     src.start();
+
+    // arena slapback so the chant sounds like a building, not a phone speaker
+    const dly = ctx.createDelay(0.5); dly.delayTime.value = 0.13;
+    const fb = ctx.createGain(); fb.gain.value = 0.22;
+    const wet = ctx.createGain(); wet.gain.value = 0.18;
+    dly.connect(fb); fb.connect(dly); dly.connect(wet); wet.connect(master);
+    arenaBus = dly;
   }
   if (ctx.state !== 'running') ctx.resume();
 }
 
 // iOS can leave the context 'interrupted' after a lock screen or app switch
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && ctx && ctx.state !== 'running') ctx.resume();
+  if (!document.hidden) {
+    keepAwake();
+    if (ctx && ctx.state !== 'running') ctx.resume();
+  }
 });
 window.addEventListener('pointerdown', () => {
   if (ctx && ctx.state !== 'running') ctx.resume();
@@ -508,6 +545,7 @@ function burst(t, { type = 'bandpass', freq = 500, q = 0.8, peak = 0.3, a = 0.03
   g.gain.linearRampToValueAtTime(peak, t + a);
   g.gain.exponentialRampToValueAtTime(0.0001, t + a + d);
   s.connect(f); f.connect(g); g.connect(master);
+  if (arenaBus) g.connect(arenaBus);
   s.start(t); s.stop(t + a + d + 0.05);
 }
 
@@ -520,6 +558,7 @@ function thump(t, peak = 0.6) {
   g.gain.linearRampToValueAtTime(peak, t + 0.012);
   g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
   o.connect(g); g.connect(master);
+  if (arenaBus) g.connect(arenaBus);
   o.start(t); o.stop(t + 0.2);
 }
 
@@ -561,6 +600,7 @@ function airhorn() {
     g.gain.setValueAtTime(0.4, t + dur * 0.8);
     g.gain.linearRampToValueAtTime(0.0001, t + dur);
     lp.connect(g); g.connect(master);
+    if (arenaBus) g.connect(arenaBus);
     [466, 469, 233].forEach((fr, i) => {
       const o = ctx.createOscillator();
       o.type = i === 2 ? 'square' : 'sawtooth';
@@ -571,6 +611,80 @@ function airhorn() {
       o.start(t); o.stop(t + dur + 0.02);
     });
   });
+}
+
+// the sacred two notes
+function ding(t, f) {
+  const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+  const o2 = ctx.createOscillator(); o2.type = 'sine'; o2.frequency.value = f * 2;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.5, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+  const g2 = ctx.createGain(); g2.gain.value = 0.12;
+  o2.connect(g2); g2.connect(g);
+  o.connect(g); g.connect(master);
+  if (arenaBus) g.connect(arenaBus);
+  o.start(t); o.stop(t + 1.15); o2.start(t); o2.stop(t + 1.15);
+}
+
+function bingBong() {
+  ensureAudio();
+  const t = ctx.currentTime;
+  ding(t, 988);        // BING
+  ding(t + 0.30, 784); // BONG
+}
+
+function speakShout(txt) {
+  if (!paOn || !soundOn || !('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(txt);
+  u.rate = 1.15; u.pitch = 0.65; u.volume = 1;
+  speechSynthesis.speak(u);
+}
+
+function strobe(ms) {
+  const s = $('strobe');
+  s.classList.add('go');
+  setTimeout(() => s.classList.remove('go'), ms);
+}
+
+function bandFlash(txt, ms) {
+  bandOverride = txt;
+  bandOverrideUntil = performance.now() + ms;
+}
+
+// shake the phone like you're in section 209
+function enableShake() {
+  const DM = window.DeviceMotionEvent;
+  if (!DM) return;
+  const attach = () => {
+    if (!shakeReady) { shakeReady = true; window.addEventListener('devicemotion', onShake); }
+  };
+  if (typeof DM.requestPermission === 'function') {
+    DM.requestPermission().then(s => { if (s === 'granted') attach(); }).catch(() => {});
+  } else attach();
+}
+
+function onShake(e) {
+  const a = e.accelerationIncludingGravity;
+  if (!a) return;
+  const mag = Math.abs(a.x || 0) + Math.abs(a.y || 0) + Math.abs(a.z || 0);
+  const now = performance.now();
+  if (mag > 30 && now - lastShake > 180) {
+    lastShake = now;
+    hype = Math.min(100, hype + 5);
+    maxEvent();
+  }
+}
+
+// the screen does not sleep during the Finals
+async function keepAwake() {
+  try {
+    if ('wakeLock' in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    }
+  } catch (e) {}
 }
 
 // ---------- chant scheduler ----------
@@ -602,7 +716,7 @@ function scheduleBar(t) {
   for (let k = 0; k < 3; k++) {
     const st = t + k * BEAT;
     syllable(st, k);
-    visualAt(st, () => { lightWord(k); speakSyl(k); });
+    visualAt(st, () => { lightWord(k); speakSyl(k); navigator.vibrate?.(35); });
   }
   visualAt(t + 3 * BEAT, () => { if (chantOn) lightWord(-1); });
   barIndex++;
@@ -645,6 +759,9 @@ function maxEvent() {
   airhorn();
   cameo();
   rain(44);
+  strobe(1600);
+  setTimeout(bingBong, 750);
+  navigator.vibrate?.([120, 60, 120, 60, 240]);
 }
 
 function press() {
@@ -654,6 +771,7 @@ function press() {
   sessionPresses++;
   const m = sessionPresses === 100 ? MODE.m100 : MILESTONES[sessionPresses];
   if (m) toast(m);
+  navigator.vibrate?.(20);
   if (ctx) {
     const t = ctx.currentTime;
     thump(t, 0.32);
@@ -742,9 +860,31 @@ window.addEventListener('hashchange', () => {
   if (MODES[h] && h !== modeName) applyMode(h, true);
 });
 
+$('bingBtn').addEventListener('click', () => {
+  ensureAudio();
+  bingBong();
+  hype = Math.min(100, hype + 10);
+  maxEvent();
+  bandFlash('🔔 BING BONG 🔔', 1200);
+  speakShout('BING BONG!');
+  navigator.vibrate?.([60, 40, 60]);
+});
+
+$('daggerBtn').addEventListener('click', () => {
+  ensureAudio();
+  toast('🗡 DAGGER. GAME. BING BONG.');
+  hype = 100;
+  maxArmed = true; // the dagger button always goes nuclear
+  maxEvent();
+  bandFlash('🗡 DAGGER 🗡', 1800);
+  speakShout('DAGGER! BING BONG!');
+});
+
 // ---------- gate ----------
 $('gate').addEventListener('click', () => {
   ensureAudio();
+  enableShake();
+  keepAwake();
   const g = $('gate');
   g.style.opacity = '0';
   setTimeout(() => g.remove(), 450);
@@ -771,7 +911,7 @@ function loop(now) {
 
   $('fill').style.width = hype + '%';
   $('db').textContent = (hype > 0.5 ? Math.round(58 + hype * 0.63) : '—') + ' dB';
-  $('band').textContent = bandLabel();
+  $('band').textContent = (performance.now() < bandOverrideUntil && bandOverride) ? bandOverride : bandLabel();
   $('arena').classList.toggle('shaking', hype > 72);
 
   if (ctx) {

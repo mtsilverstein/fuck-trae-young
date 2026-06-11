@@ -25,6 +25,16 @@ or link straight into it:
 
 **https://fuck-trae-young.vercel.app/#wemby**
 
+## 🔔 The arsenal
+
+- **BING BONG button** — the sacred two notes, synthesized on demand
+- **DAGGER button** — instant singularity, for the moment Brunson ends somebody's season: air horn, strobe, alien bow, middle-finger rain, all of it
+- **Shake to chant** — wave the phone like you're in Section 209 (grant motion access when asked)
+- **Beat-synced vibration** on Android, stomping in your hand
+- **Wake lock** — the screen does not sleep during the Finals
+- **Arena slapback echo** — the chant bounces off the building like the real thing
+- Press the button exactly 11 times and the Captain nods
+
 ## Lore
 
 Est. May 23, 2021 — Game 1, 0.9 on the clock. He hit the floater, said it
