@@ -77,9 +77,10 @@ export function cameo() {
   cap.className = 'cap'; cap.textContent = mode().cameoCap;
   w.append(glyph, cap);
   document.body.appendChild(w);
-  requestAnimationFrame(() => { w.style.bottom = '6vh'; });
+  void w.offsetWidth;
+  w.classList.add('up');
   setTimeout(() => { w.classList.add('bow'); }, 900);
-  setTimeout(() => { w.style.bottom = '-45vh'; }, 2900);
+  setTimeout(() => { w.classList.remove('up'); }, 2900);
   setTimeout(() => { w.remove(); cameoBusy = false; }, 3900);
 }
 

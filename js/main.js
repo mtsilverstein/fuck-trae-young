@@ -47,7 +47,7 @@ function maxEvent() {
   if (!maxArmed || state.hype < 99.5) return;
   maxArmed = false;
   state.session.singularities++;
-  fx.toast('🚨 121 dB — BING BONG SINGULARITY ACHIEVED');
+  fx.toast('121 DB — BING BONG SINGULARITY');
   audio.organCharge();
   setTimeout(audio.airhorn, 850);
   setTimeout(audio.bingBong, 1600);
@@ -116,18 +116,18 @@ el('bingBtn').addEventListener('click', () => {
   audio.bingBong();
   addHype(10);
   maxEvent();
-  fx.bandFlash('🔔 BING BONG 🔔', 1200);
+  fx.bandFlash('BING BONG', 1200);
   audio.speak('BING BONG!');
   navigator.vibrate?.([60, 40, 60]);
 });
 
 el('daggerBtn').addEventListener('click', () => {
   audio.ensureAudio();
-  fx.toast('🗡 DAGGER. GAME. BING BONG.');
+  fx.toast('DAGGER. GAME. BING BONG.');
   state.hype = 100;
   maxArmed = true; // the dagger button always goes nuclear
   maxEvent();
-  fx.bandFlash('🗡 DAGGER 🗡', 1800);
+  fx.bandFlash('DAGGER', 1800);
   audio.speak('BANG!');
   setTimeout(() => audio.speak('BANG!'), 450);
 });
