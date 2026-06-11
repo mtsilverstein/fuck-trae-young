@@ -16,6 +16,15 @@ One file. Zero dependencies. Zero respect.
 - Toggle **PA ANNOUNCER** to make your computer literally say it
 - Lifetime fucks chanted are persisted in localStorage, as the founders intended
 
+## 👽 WEMBY MODE — Finals Edition
+
+New enemy, same energy. Tap **VS: TRAE / VS: WEMBY** to switch who the
+Garden is mad at — words, ticker, scoreboard, cameo, and PA announcer all
+swap. Same three-beat cadence: FUCK / WEM / BY. Your choice is remembered,
+or link straight into it:
+
+**https://fuck-trae-young.vercel.app/#wemby**
+
 ## Lore
 
 Est. May 23, 2021 — Game 1, 0.9 on the clock. He hit the floater, said it

@@ -113,7 +113,9 @@
     color:var(--orange);
     text-shadow:0 0 18px rgba(245,132,38,.95),0 0 70px rgba(245,132,38,.5);
     transform:scale(1.07);
+    animation:wordpop .16s ease-out;
   }
+  @keyframes wordpop{0%{transform:scale(1)}55%{transform:scale(1.12)}100%{transform:scale(1.07)}}
   #jumbo.idle .word{animation:breathe 2.8s ease-in-out infinite}
   #jumbo.idle .word:nth-child(2){animation-delay:.3s}
   #jumbo.idle .word:nth-child(3){animation-delay:.6s}
@@ -249,7 +251,7 @@
 <div id="arena">
   <header id="board">
     <div class="panel">
-      <div class="lbl">TRAE — FUCKS GIVEN</div>
+      <div class="lbl" id="enemyLbl">TRAE — FUCKS GIVEN</div>
       <div class="val">0</div>
     </div>
     <div class="mid">
@@ -257,8 +259,8 @@
       <div class="msg-sub">THE WORLD'S MOST FAMOUS ARENA</div>
       <div class="chips">
         <span class="chip">4TH QTR</span>
-        <span class="chip clock">00:00.9</span>
-        <span class="chip">EST. MAY 23, 2021</span>
+        <span class="chip clock" id="clockChip">00:00.9</span>
+        <span class="chip" id="eraChip">EST. MAY 23, 2021</span>
       </div>
     </div>
     <div class="panel">
@@ -270,7 +272,7 @@
   <main>
     <div class="marquee">
       <div id="jumbo" class="idle">
-        <div class="words">
+        <div class="words" id="words">
           <span class="word">FUCK</span>
           <span class="word">TRAE</span>
           <span class="word">YOUNG</span>
@@ -291,11 +293,12 @@
       <button class="pill on" id="sndBtn">SOUND: ON</button>
       <button id="chantBtn">🗣 CHANT</button>
       <button class="pill" id="paBtn">PA ANNOUNCER: OFF</button>
+      <button class="pill" id="modeBtn">VS: TRAE</button>
     </div>
-    <div class="hint">MASH THE BUTTON · SPACEBAR WORKS · THE METER DECAYS LIKE TRAE'S DEFENSE</div>
+    <div class="hint" id="hint">MASH THE BUTTON · SPACEBAR WORKS · THE METER DECAYS LIKE TRAE'S DEFENSE</div>
   </section>
 
-  <footer>
+  <footer id="foot">
     A Garden tradition since May 23, 2021 — he hit the floater with 0.9 on the clock, said it was quiet, and took a bow.<br>
     The Garden has not been quiet since. BING BONG.
   </footer>
@@ -306,7 +309,7 @@
 
 <div id="gate">
   <div class="g-sub">MADISON SQUARE GARDEN PRESENTS</div>
-  <h1>FUCK<br>TRAE<br>YOUNG</h1>
+  <h1 id="gateTitle">FUCK<br>TRAE<br>YOUNG</h1>
   <div class="g-enter">▶ TAP TO ENTER THE GARDEN ◀</div>
   <div class="g-tip">📢 ON SILENT? FLIP THE RINGER SWITCH &amp; VOLUME UP — THE GARDEN MUST BE HEARD</div>
   <div class="g-warn">⚠️ Contains synthesized crowd noise, rhythmic profanity, air horns, and zero respect for Trae Young. He took a bow. We took it personally.</div>
@@ -319,7 +322,7 @@
 //  100% vanilla, 100% offline, 0% respect.
 // ============================================================
 const $ = id => document.getElementById(id);
-const WORDS = [...document.querySelectorAll('.word')];
+let WORDS = [...document.querySelectorAll('.word')];
 
 // ---------- state ----------
 let hype = 0;
@@ -343,17 +346,84 @@ const MILESTONES = {
   500: 'Your banner is going up in the rafters. It just says the chant.'
 };
 
-// ---------- ticker ----------
-const TICK_ITEMS = [
-  'BREAKING: CHANT ERUPTS AT RANGERS GAME — NO BASKETBALL WAS SCHEDULED',
-  'BILLY JOEL PAUSES PIANO MAN, CONDUCTS THE CROWD INSTEAD',
-  'TRAE YOUNG REPORTS IT IS QUIET IN HERE — IT IS NOT QUIET IN HERE',
-  'SECTION 209 HAS NOT SAT DOWN SINCE MAY 2021',
-  'WESTMINSTER DOG SHOW BREACHED — THE DOGS KNOW THE WORDS',
-  'EVERY MSG EVENT NOW LEGALLY REQUIRED TO INCLUDE THE CHANT',
-  'BING BONG'
-].join('  •••  ');
-$('tick').textContent = TICK_ITEMS + '  •••  ' + TICK_ITEMS + '  •••  ';
+// ---------- modes ----------
+// Same engine, different enemy. The chant is always three beats;
+// beatMap says which word lights up on each beat (WEM-BY = two hits).
+const MODES = {
+  trae: {
+    words: ['FUCK', 'TRAE', 'YOUNG'],
+    beatMap: [0, 1, 2],
+    panelLbl: 'TRAE — FUCKS GIVEN',
+    chant: 'Fuck! Trae! Young!',
+    cameoEmoji: '🤫',
+    cameoCap: 'HE&rsquo;S BOWING — BOO LOUDER',
+    rain: ['🖕', '🖕', '🖕', '🖕', '🏀', '🧡', '💙'],
+    clock: '00:00.9',
+    chip: 'EST. MAY 23, 2021',
+    hint: "MASH THE BUTTON · SPACEBAR WORKS · THE METER DECAYS LIKE TRAE'S DEFENSE",
+    m100: 'Trae heard you. He is cupping his ear. DO NOT let him.',
+    ticker: [
+      'BREAKING: CHANT ERUPTS AT RANGERS GAME — NO BASKETBALL WAS SCHEDULED',
+      'BILLY JOEL PAUSES PIANO MAN, CONDUCTS THE CROWD INSTEAD',
+      'TRAE YOUNG REPORTS IT IS QUIET IN HERE — IT IS NOT QUIET IN HERE',
+      'SECTION 209 HAS NOT SAT DOWN SINCE MAY 2021',
+      'WESTMINSTER DOG SHOW BREACHED — THE DOGS KNOW THE WORDS',
+      'EVERY MSG EVENT NOW LEGALLY REQUIRED TO INCLUDE THE CHANT',
+      'BING BONG'
+    ],
+    foot: 'A Garden tradition since May 23, 2021 — he hit the floater with 0.9 on the clock, said it was quiet, and took a bow.<br>The Garden has not been quiet since. BING BONG.'
+  },
+  wemby: {
+    words: ['FUCK', 'WEMBY'],
+    beatMap: [0, 1, 1],
+    panelLbl: 'WEMBY — FUCKS GIVEN',
+    chant: 'Fuck! Wemby!',
+    cameoEmoji: '👽',
+    cameoCap: 'THE ALIEN IS SIGNALING THE MOTHERSHIP — BOO LOUDER',
+    rain: ['🖕', '🖕', '🖕', '🖕', '🏀', '🛸', '🧡', '💙'],
+    clock: '7:04',
+    chip: 'FINALS · JUNE 2026',
+    hint: 'MASH THE BUTTON · SPACEBAR WORKS · 7&#39;4&#34; AND HE STILL CAN&rsquo;T BLOCK A CHANT',
+    m100: 'Wemby heard you. He is signaling the mothership. DO NOT let him.',
+    ticker: [
+      'BREAKING: UFO OVER 33RD &amp; 7TH DENIED LANDING BY SECTION 209',
+      'SCOUTING REPORT: BLOCKS EVERYTHING EXCEPT OUT THE NOISE',
+      'HE HAS NEVER HEARD 20,000 PEOPLE CONJUGATE FUCK IN UNISON',
+      'TONY PARKER DID NOT WARN HIM ABOUT THIS',
+      'THE GARDEN HAS NO CEILING — STILL NOT ENOUGH ROOM FOR HIM',
+      'SECTION 209 HAS NOT SAT DOWN SINCE MAY 2021',
+      'FRENCH FOR BING BONG: BING BONG'
+    ],
+    foot: 'Finals edition — new enemy, same energy. The chant adapts. The Garden does not.<br>BING BONG.'
+  }
+};
+
+let modeName = 'trae';
+let MODE = MODES.trae;
+
+function tickText() {
+  const s = MODE.ticker.join('  •••  ');
+  return s + '  •••  ' + s + '  •••  ';
+}
+
+function applyMode(name, announce) {
+  modeName = name;
+  MODE = MODES[name];
+  $('words').innerHTML = MODE.words.map(w => '<span class="word">' + w + '</span>').join('');
+  WORDS = [...document.querySelectorAll('.word')];
+  $('enemyLbl').textContent = MODE.panelLbl;
+  $('tick').innerHTML = tickText();
+  $('clockChip').textContent = MODE.clock;
+  $('eraChip').textContent = MODE.chip;
+  $('hint').innerHTML = MODE.hint;
+  $('foot').innerHTML = MODE.foot;
+  $('modeBtn').textContent = 'VS: ' + (name === 'trae' ? 'TRAE' : 'WEMBY');
+  $('modeBtn').classList.toggle('on', name === 'wemby');
+  const gh = $('gateTitle');
+  if (gh) gh.innerHTML = MODE.words.join('<br>');
+  try { localStorage.setItem('fty_mode', name); } catch (e) {}
+  if (announce) toast(name === 'wemby' ? '👽 WEMBY MODE — FINALS EDITION. SAME ENERGY.' : '🤫 CLASSIC MODE — EST. 2021.');
+}
 
 // ---------- audio engine ----------
 // iOS mutes the Web Audio API when the ringer switch is on silent, but a
@@ -538,19 +608,22 @@ function visualAt(t, fn) {
   setTimeout(fn, Math.max(0, (t - ctx.currentTime) * 1000));
 }
 
-function lightWord(i) {
-  WORDS.forEach((w, j) => w.classList.toggle('lit', j === i));
-  if (i >= 0) {
-    $('jumbo').classList.add('flash');
-    setTimeout(() => $('jumbo').classList.remove('flash'), 90);
-  }
+function lightWord(beat) {
+  WORDS.forEach(w => w.classList.remove('lit'));
+  if (beat < 0) return;
+  const w = WORDS[MODE.beatMap[beat]];
+  if (!w) return;
+  void w.offsetWidth; // restart the pop animation when the same word hits twice (WEM-BY)
+  w.classList.add('lit');
+  $('jumbo').classList.add('flash');
+  setTimeout(() => $('jumbo').classList.remove('flash'), 90);
 }
 
 function paMaybe(t) {
   if (!paOn || !('speechSynthesis' in window)) return;
   if (speechSynthesis.speaking || speechSynthesis.pending) return;
   visualAt(t, () => {
-    const u = new SpeechSynthesisUtterance('Fuck! Trae! Young!');
+    const u = new SpeechSynthesisUtterance(MODE.chant);
     u.rate = 1.1; u.pitch = 0.5; u.volume = 0.9;
     speechSynthesis.speak(u);
   });
@@ -571,7 +644,8 @@ function press() {
   hype = Math.min(100, hype + 7);
   maxEvent();
   sessionPresses++;
-  if (MILESTONES[sessionPresses]) toast(MILESTONES[sessionPresses]);
+  const m = sessionPresses === 100 ? MODE.m100 : MILESTONES[sessionPresses];
+  if (m) toast(m);
   if (ctx) {
     const t = ctx.currentTime;
     thump(t, 0.32);
@@ -607,7 +681,7 @@ function toast(msg) {
 }
 
 function rain(n) {
-  const EMO = ['🖕', '🖕', '🖕', '🖕', '🏀', '🧡', '💙'];
+  const EMO = MODE.rain;
   for (let i = 0; i < n; i++) {
     const d = document.createElement('div');
     d.className = 'drop';
@@ -626,7 +700,7 @@ function cameo() {
   cameoBusy = true;
   const w = document.createElement('div');
   w.className = 'trae';
-  w.innerHTML = '<span class="emoji">🤫</span><div class="cap">HE&rsquo;S BOWING — BOO LOUDER</div>';
+  w.innerHTML = '<span class="emoji">' + MODE.cameoEmoji + '</span><div class="cap">' + MODE.cameoCap + '</div>';
   document.body.appendChild(w);
   requestAnimationFrame(() => { w.style.bottom = '6vh'; });
   setTimeout(() => { w.classList.add('bow'); boo(); }, 900);
@@ -649,6 +723,15 @@ $('paBtn').addEventListener('click', () => {
   $('paBtn').textContent = 'PA ANNOUNCER: ' + (paOn ? 'ON' : 'OFF');
   $('paBtn').classList.toggle('on', paOn);
   if (!paOn && 'speechSynthesis' in window) speechSynthesis.cancel();
+});
+
+$('modeBtn').addEventListener('click', () => {
+  applyMode(modeName === 'trae' ? 'wemby' : 'trae', true);
+});
+
+window.addEventListener('hashchange', () => {
+  const h = location.hash.replace('#', '');
+  if (MODES[h] && h !== modeName) applyMode(h, true);
 });
 
 // ---------- gate ----------
@@ -698,6 +781,14 @@ function loop(now) {
 
   requestAnimationFrame(loop);
 }
+
+// boot: URL hash beats saved preference beats default
+let initMode = 'trae';
+try { initMode = localStorage.getItem('fty_mode') || 'trae'; } catch (e) {}
+const h = location.hash.replace('#', '');
+if (MODES[h]) initMode = h;
+if (!MODES[initMode]) initMode = 'trae';
+applyMode(initMode, false);
 
 $('chantCount').textContent = lifetime.toLocaleString();
 requestAnimationFrame(loop);
