@@ -35,6 +35,14 @@ export function setIdle(idle) {
   el('jumbo').classList.toggle('idle', idle);
 }
 
+// the title hits the board like it owns the building
+export function titleSlam() {
+  WORDS.forEach((w, i) => setTimeout(() => {
+    w.classList.add('slam');
+    setTimeout(() => w.classList.remove('slam'), 600);
+  }, i * 90));
+}
+
 export function toast(msg) {
   const t = document.createElement('div');
   t.className = 'toast'; t.textContent = msg;

@@ -75,12 +75,26 @@
 <div id="scan"></div>
 <div id="strobe"></div>
 
+<div id="sweep"></div>
+
 <div id="gate">
-  <div class="g-sub">MADISON SQUARE GARDEN PRESENTS</div>
-  <h1 id="gateTitle">FUCK<br>TRAE<br>YOUNG</h1>
-  <div class="g-enter">▶ TAP TO ENTER THE GARDEN ◀</div>
-  <div class="g-tip">📢 ON SILENT? FLIP THE RINGER SWITCH &amp; VOLUME UP — THE GARDEN MUST BE HEARD</div>
-  <div class="g-warn">⚠️ Contains synthesized crowd noise, rhythmic profanity, air horns, and zero respect for Trae Young. He took a bow. We took it personally.</div>
+  <div class="g-sub">MADISON SQUARE GARDEN</div>
+  <div class="turnstile">
+    <div class="ts-housing">
+      <div class="ts-etch">NY OR NOWHERE</div>
+      <div class="ts-lcd" id="lcd">INSERT CARD</div>
+      <div class="ts-slot" id="slot">
+        <span class="ts-chevrons">&#9656;&#9656;&#9656;&#9656;&#9656;&#9656;</span>
+      </div>
+    </div>
+    <div class="metrocard" id="metrocard">
+      <div class="mc-word">MetroCard</div>
+      <div class="mc-small">INSERT THIS WAY / THIS SIDE FACING YOU</div>
+      <div class="mc-stripe"></div>
+    </div>
+  </div>
+  <button id="hop" class="hop" hidden>hop the turnstile</button>
+  <div class="g-fine">EST. 2021<br>ON SILENT? FLIP THE RINGER. THE GARDEN MUST BE HEARD.</div>
 </div>
 
 <script type="module" src="js/main.js"></script>

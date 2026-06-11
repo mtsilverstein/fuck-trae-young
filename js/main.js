@@ -180,18 +180,14 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('pointerdown', () => audio.resumeIfNeeded(), true);
 
-// ---------- gate (tap-to-enter; replaced by the turnstile in Task 4) ----------
-el('gate').addEventListener('click', () => {
-  audio.ensureAudio();
+// ---------- the turnstile (audio unlock happens inside the swipe) ----------
+nyc.initGate(() => {
   enableShake();
   keepAwake();
-  const g = el('gate');
-  g.style.opacity = '0';
-  setTimeout(() => g.remove(), 450);
   addHype(16);
-  state.session.entry = 'tapped';
+  fx.titleSlam();
   fx.toast('Welcome to the Garden. You know the words.');
-}, { once: true });
+});
 
 // ---------- main loop ----------
 function bandLabel() {
