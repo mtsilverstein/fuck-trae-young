@@ -32,10 +32,9 @@ export const MODES = {
     words: ['FUCK', 'TRAE', 'YOUNG'],
     beatMap: [0, 1, 2],
     panelLbl: 'TRAE — FUCKS GIVEN',
-    syllables: ['FUCK', 'TRAE', 'YOUNG'],
-    cameoGlyph: '🤫',
-    cameoCap: 'HE’S BOWING — BOO LOUDER',
-    rain: ['🖕', '🖕', '🖕', '🖕', '🏀', '🧡', '💙'],
+    onsets: ['f', 't', 'j'],
+    vowels: [[700, 1100], [600, 1700], [650, 1080]], // UH / AY / UH
+    takeover: { words: ['HE', 'HEARD', 'YOU'], cap: 'BOO LOUDER' },
     clock: '00:00.9',
     chip: 'EST. MAY 23, 2021',
     hint: "MASH THE BUTTON · SHAKE THE PHONE · THE METER DECAYS LIKE TRAE'S DEFENSE",
@@ -51,10 +50,9 @@ export const MODES = {
     words: ['FUCK', 'WEMBY'],
     beatMap: [0, 1, 1],
     panelLbl: 'WEMBY — FUCKS GIVEN',
-    syllables: ['FUCK', 'WEM', 'BEE'],
-    cameoGlyph: '👽',
-    cameoCap: 'THE ALIEN IS SIGNALING THE MOTHERSHIP — BOO LOUDER',
-    rain: ['🖕', '🖕', '🖕', '🖕', '🏀', '🛸', '🧡', '💙'],
+    onsets: ['f', 'w', 'b'],
+    vowels: [[700, 1100], [600, 1700], [320, 2100]], // UH / EH / EE
+    takeover: { words: ['IL', 'VOUS', 'ENTEND'], cap: 'BOO LOUDER. HE SPEAKS FRENCH.' },
     clock: '7:04',
     chip: 'FINALS · JUNE 2026',
     hint: 'MASH THE BUTTON · SHAKE THE PHONE · 7’4” AND HE STILL CAN’T BLOCK A CHANT',
@@ -84,7 +82,8 @@ export const MILESTONES = {
 export const state = {
   hype: 0,
   soundOn: true,
-  voiceOn: true,
+  voiceOn: false, // the crowd is the voice; the robot is a guest
+
   timbs: false,
   modeName: 'trae',
   lifetime: 0,

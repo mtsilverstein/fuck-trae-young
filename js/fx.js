@@ -7,7 +7,6 @@ const el = id => document.getElementById(id);
 
 let WORDS = [];
 let bandOverride = null, bandOverrideUntil = 0;
-let cameoBusy = false;
 
 export function wordsRebuild(words) {
   const host = el('words');
@@ -21,6 +20,7 @@ export function wordsRebuild(words) {
 }
 
 export function lightWord(beat) {
+  if (takeoverActive) return; // the board is saying something else right now
   WORDS.forEach(w => w.classList.remove('lit'));
   if (beat < 0) return;
   const w = WORDS[mode().beatMap[beat]];
@@ -43,45 +43,43 @@ export function titleSlam() {
   }, i * 90));
 }
 
+// announcements belong on the board, not in floating web-app toasts
 export function toast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast'; t.textContent = msg;
-  el('toasts').appendChild(t);
-  setTimeout(() => t.classList.add('bye'), 3400);
-  setTimeout(() => t.remove(), 4000);
+  bandFlash(msg.toUpperCase(), 3200);
 }
 
+// championship confetti: paper, not stickers
+const CONFETTI = ['#006BB6', '#F58426', '#ffffff', '#BEC0C2'];
 export function rain(n) {
-  const EMO = mode().rain;
   for (let i = 0; i < n; i++) {
     const d = document.createElement('div');
-    d.className = 'drop';
-    d.textContent = EMO[Math.floor(Math.random() * EMO.length)];
+    d.className = 'cfetti';
     d.style.left = Math.random() * 100 + 'vw';
-    d.style.fontSize = (22 + Math.random() * 34) + 'px';
-    d.style.animationDuration = (1.4 + Math.random() * 1.6) + 's';
-    d.style.animationDelay = (Math.random() * 0.9) + 's';
+    d.style.width = (6 + Math.random() * 5) + 'px';
+    d.style.height = (10 + Math.random() * 7) + 'px';
+    d.style.background = CONFETTI[Math.floor(Math.random() * CONFETTI.length)];
+    d.style.setProperty('--dx', (Math.random() * 24 - 12).toFixed(1) + 'vw');
+    d.style.setProperty('--rot', Math.round(540 + Math.random() * 540) + 'deg');
+    d.style.animationDuration = (2.2 + Math.random() * 1.6) + 's';
+    d.style.animationDelay = (Math.random() * 1) + 's';
     document.body.appendChild(d);
     d.addEventListener('animationend', () => d.remove());
   }
 }
 
-export function cameo() {
-  if (cameoBusy) return;
-  cameoBusy = true;
-  const w = document.createElement('div');
-  w.className = 'trae';
-  const glyph = document.createElement('span');
-  glyph.className = 'emoji'; glyph.textContent = mode().cameoGlyph;
-  const cap = document.createElement('div');
-  cap.className = 'cap'; cap.textContent = mode().cameoCap;
-  w.append(glyph, cap);
-  document.body.appendChild(w);
-  void w.offsetWidth;
-  w.classList.add('up');
-  setTimeout(() => { w.classList.add('bow'); }, 900);
-  setTimeout(() => { w.classList.remove('up'); }, 2900);
-  setTimeout(() => { w.remove(); cameoBusy = false; }, 3900);
+// the board takes over. no mascots, no stickers — just the message.
+let takeoverActive = false;
+export function takeover() {
+  if (takeoverActive) return;
+  takeoverActive = true;
+  const tk = mode().takeover;
+  wordsRebuild(tk.words);
+  WORDS.forEach(w => w.classList.add('lit'));
+  bandFlash(tk.cap, 2600);
+  setTimeout(() => {
+    takeoverActive = false;
+    wordsRebuild(mode().words);
+  }, 2600);
 }
 
 export function strobe(ms) {
@@ -96,8 +94,10 @@ export function bandFlash(txt, ms) {
 }
 
 export function updateBand(label) {
-  el('band').textContent =
-    (performance.now() < bandOverrideUntil && bandOverride) ? bandOverride : label;
+  const announcing = performance.now() < bandOverrideUntil && bandOverride;
+  const band = el('band');
+  band.textContent = announcing ? bandOverride : label;
+  band.classList.toggle('announce', !!announcing);
 }
 
 let vuSegs = null, peakLit = 0, peakUntil = 0;

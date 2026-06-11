@@ -44,6 +44,7 @@ export function ensureAudio() {
   // warm it up with a silent utterance so the scheduled chant can talk
   if (!speechWarmed && 'speechSynthesis' in window) {
     speechWarmed = true;
+    lastSpeakAt = performance.now();
     const u = new SpeechSynthesisUtterance(' ');
     u.volume = 0;
     speechSynthesis.speak(u);
@@ -95,6 +96,19 @@ export function ensureAudio() {
     const wet = ctx.createGain(); wet.gain.value = 0.18;
     dly.connect(fb); fb.connect(dly); dly.connect(wet); wet.connect(master);
     arenaBus = dly;
+
+    // and a real room: generated impulse response, 1.8s of building
+    const irLen = Math.floor(ctx.sampleRate * 1.8);
+    const ir = ctx.createBuffer(2, irLen, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = ir.getChannelData(ch);
+      for (let i = 0; i < irLen; i++) {
+        d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.6);
+      }
+    }
+    const verb = ctx.createConvolver(); verb.buffer = ir;
+    const verbGain = ctx.createGain(); verbGain.gain.value = 0.27;
+    dly.connect(verb); verb.connect(verbGain); verbGain.connect(master);
   }
   if (ctx.state !== 'running') ctx.resume();
 }
@@ -161,11 +175,11 @@ function timbsStomp(t) {
 // vowel formant pairs per beat: UH / AY / UH
 const VOWELS = [[700, 1100], [600, 1700], [650, 1080]];
 
-function roar(t, f, qScale, peak, d) {
+function roar(t, f, qScale, peak, d, fromScale = 0.88) {
   const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
   const bp = ctx.createBiquadFilter();
   bp.type = 'bandpass'; bp.Q.value = 2.2 * qScale;
-  bp.frequency.setValueAtTime(f * 0.88, t);
+  bp.frequency.setValueAtTime(f * fromScale, t);
   bp.frequency.linearRampToValueAtTime(f * 1.12, t + d * 0.7);
   const g = ctx.createGain();
   g.gain.setValueAtTime(0.0001, t);
@@ -176,13 +190,28 @@ function roar(t, f, qScale, peak, d) {
   s.start(t); s.stop(t + d + 0.1);
 }
 
-// one syllable of 20,000 people yelling in unison
+// one syllable of 20,000 people yelling in unison.
+// the consonant is what sells the word: F is friction, T and B are
+// little explosions, W and Y are glides into the vowel.
 export function syllable(t, k) {
   const power = 0.34 + (state.hype / 100) * 0.45;
   const dur = k === 2 ? 0.42 : 0.26;
-  const [f1, f2] = VOWELS[k];
-  roar(t, f1, 1.0, power, dur);
-  roar(t, f2, 0.55, power * 0.7, dur);
+  const [f1, f2] = (mode().vowels || VOWELS)[k];
+  const onset = (mode().onsets || [])[k];
+  let vt = t;          // vowel start
+  let fromScale = 0.88;
+  if (onset === 'f') {
+    burst(t - 0.055, { type: 'highpass', freq: 4200, q: 0.7, peak: power * 0.5, a: 0.012, d: 0.07 });
+  } else if (onset === 't' || onset === 'b' || onset === 'k') {
+    burst(t, { type: 'bandpass', freq: onset === 'b' ? 380 : 1600, q: 1.4, peak: power * 0.9, a: 0.004, d: 0.03 });
+    vt = t + 0.028;
+  } else if (onset === 'w') {
+    fromScale = 0.55;
+  } else if (onset === 'j') {
+    fromScale = 1.3;
+  }
+  roar(vt, f1, 1.0, power, dur, fromScale);
+  roar(vt, f2, 0.55, power * 0.7, dur, fromScale);
   thump(t, 0.45 + (state.hype / 100) * 0.25);
   if (state.timbs) timbsStomp(t);
   for (let i = 0; i < 3; i++) {
@@ -342,14 +371,18 @@ export function pennRumbleAudio(seconds) {
   o.start(t); o.stop(t + seconds + 0.05);
 }
 
-// one spoken syllable per beat, riding the same scheduler as the lights.
-// if the engine falls behind, drop the backlog at the top of the bar so
-// the voice snaps back onto the beat instead of drifting.
-export function speakSyl(k) {
+// the robot says the whole phrase or nothing. per-syllable utterances
+// queue up behind engine latency and degrade to just the first word,
+// which is how a chant machine ends up only ever saying "fuck."
+let lastSpeakAt = 0;
+export function speakPhrase() {
   if (!state.voiceOn || !state.soundOn || !('speechSynthesis' in window)) return;
-  if (k === 0 && speechSynthesis.pending) speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(mode().syllables[k]);
-  u.rate = 1.4; u.pitch = 0.7; u.volume = 1;
+  const busy = speechSynthesis.speaking || speechSynthesis.pending;
+  if (busy && performance.now() - lastSpeakAt < 4000) return; // never stack
+  if (busy) speechSynthesis.cancel(); // wedged queue (e.g. voiceless engine) — clear it
+  lastSpeakAt = performance.now();
+  const u = new SpeechSynthesisUtterance(mode().words.join(' ') + '!');
+  u.rate = 1.05; u.pitch = 0.7; u.volume = 1;
   speechSynthesis.speak(u);
 }
 

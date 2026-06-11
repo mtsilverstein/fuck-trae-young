@@ -51,8 +51,9 @@ function maxEvent() {
   audio.organCharge();
   setTimeout(audio.airhorn, 850);
   setTimeout(audio.bingBong, 1600);
-  fx.cameo();
-  fx.rain(44);
+  setTimeout(audio.boo, 900);
+  setTimeout(fx.takeover, 900);
+  fx.rain(70);
   fx.strobe(1600);
   navigator.vibrate?.([120, 60, 120, 60, 240]);
 }
