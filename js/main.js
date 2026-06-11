@@ -239,6 +239,7 @@ function loop(now) {
 // ---------- boot ----------
 loadPersisted();
 applyModeDOM(false);
+fx.flashesStart();
 nyc.initTicker();
 nyc.initTimbs();
 nyc.initStarks();

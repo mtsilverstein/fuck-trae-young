@@ -3,7 +3,7 @@
 
 import { state, BEAT, BAR, saveLifetime } from './state.js';
 import { audioOn, tNow, syllable, speakSyl } from './audio.js';
-import { lightWord, setIdle } from './fx.js';
+import { lightWord, setIdle, kick } from './fx.js';
 import { bumpWorldwide } from './worldwide.js';
 
 let active = false, schedTimer = null, nextBar = 0;
@@ -38,7 +38,7 @@ function scheduleBar(t) {
   for (let k = 0; k < 3; k++) {
     const st = t + k * BEAT;
     syllable(st, k);
-    visualAt(st, () => { lightWord(k); speakSyl(k); navigator.vibrate?.(35); });
+    visualAt(st, () => { lightWord(k); kick(); speakSyl(k); navigator.vibrate?.(35); });
   }
   visualAt(t + 3 * BEAT, () => { if (active) lightWord(-1); });
   state.session.bars++;

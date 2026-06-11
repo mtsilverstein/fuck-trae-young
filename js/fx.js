@@ -91,8 +91,27 @@ export function updateBand(label) {
     (performance.now() < bandOverrideUntil && bandOverride) ? bandOverride : label;
 }
 
+let vuSegs = null, peakLit = 0, peakUntil = 0;
+function ensureVu() {
+  if (vuSegs) return;
+  const vu = el('vu');
+  vuSegs = Array.from({ length: 24 }, (_, i) => {
+    const s = document.createElement('span');
+    s.className = 'seg ' + (i < 14 ? 'g' : i < 19 ? 'a' : 'r');
+    vu.appendChild(s);
+    return s;
+  });
+}
+
 export function updateMeter(hype, dbText) {
-  el('fill').style.width = hype + '%';
+  ensureVu();
+  const lit = Math.round(hype / 100 * 24);
+  const now = performance.now();
+  if (lit >= peakLit || now > peakUntil) { peakLit = lit; peakUntil = now + 900; }
+  vuSegs.forEach((s, i) => {
+    s.classList.toggle('on', i < lit);
+    s.classList.toggle('peak', i === peakLit - 1 && peakLit > lit);
+  });
   el('db').textContent = dbText;
 }
 
@@ -105,9 +124,33 @@ export function pumpButton() {
   b.classList.remove('pump'); void b.offsetWidth; b.classList.add('pump');
 }
 
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+// a 4px shove in a random direction, synced to the stomp
+export function kick() {
+  if (reducedMotion.matches) return;
+  const a = el('arena');
+  const ang = Math.random() * Math.PI * 2;
+  a.style.setProperty('--kx', (Math.cos(ang) * 4).toFixed(1) + 'px');
+  a.style.setProperty('--ky', (Math.sin(ang) * 4).toFixed(1) + 'px');
+  a.classList.remove('kick'); void a.offsetWidth; a.classList.add('kick');
+}
+
+// camera flashes in the dark upper bowl. somebody's always filming.
+export function flashesStart() {
+  const host = el('flashes');
+  for (let i = 0; i < 14; i++) {
+    const d = document.createElement('span');
+    d.className = 'cflash';
+    d.style.left = (Math.random() * 100).toFixed(1) + 'vw';
+    d.style.top = (3 + Math.random() * 52).toFixed(1) + 'vh';
+    d.style.setProperty('--d', (7 + Math.random() * 8).toFixed(1) + 's');
+    d.style.setProperty('--dl', (Math.random() * 12).toFixed(1) + 's');
+    host.appendChild(d);
+  }
+}
+
 // ---- placeholders that grow real in later tasks ----
-export function kick() {}
-export function flashesStart() {}
 export function grainTribute() {}
 export function pigeon() {}
 export function rat() {}
